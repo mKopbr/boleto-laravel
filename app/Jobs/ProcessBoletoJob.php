@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Jobs;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class ProcessBoletoJob implements ShouldQueue
@@ -25,38 +27,22 @@ class ProcessBoletoJob implements ShouldQueue
     public function handle()
     {
         foreach ($this->lines as $line) {
-            [$name, $governmentId, $email, $debtAmount, $debtDueDate, $debtID] = $line;
+            $data = str_getcsv($line);
 
-            // Mocando a geração do boleto
-            $boleto = $this->generateBoleto($name, $governmentId, $debtAmount, $debtDueDate, $debtID);
+            if (count($data) < 6) {
+                Log::warning("Linha inválida: " . json_encode($data));
+                continue;
+            }
 
-            // Simulando envio de email e registrando no log
-            $this->sendEmail($email, $boleto);
+            [$name, $governmentId, $email, $debtAmount, $debtDueDate, $debtID] = $data;
 
-            // Log de cada boleto processado
-            Log::info("Boleto gerado para: {$name} (ID: {$debtID}), valor: R$ {$debtAmount}");
+            // Simula a geração do boleto e envio de email
+            Log::info("Boleto gerado para: {$name}, valor: R$ {$debtAmount}");
+            Log::info("Email enviado para: {$email}");
         }
 
-        // Log do progresso
-        Log::info("Job {$this->jobId} - Bloco {$this->index} processado com sucesso.");
-    }
-
-    protected function generateBoleto($name, $governmentId, $debtAmount, $debtDueDate, $debtID)
-    {
-        // Simulando a geração do boleto
-        return [
-            'name' => $name,
-            'governmentId' => $governmentId,
-            'debtAmount' => $debtAmount,
-            'debtDueDate' => $debtDueDate,
-            'debtID' => $debtID,
-            'boletoURL' => "http://boleto.api/fake/{$debtID}",
-        ];
-    }
-
-    protected function sendEmail($email, $boleto)
-    {
-        // Simulando envio de email e registrando no log
-        Log::info("Email enviado para: {$email} com link do boleto: {$boleto['boletoURL']}");
+        // Incrementar o progresso no cache
+        Cache::increment($this->jobId . '_progress');
+        Log::info("Progresso atualizado para: " . Cache::get($this->jobId . '_progress'));
     }
 }
