@@ -152,3 +152,8 @@ Este projeto está licenciado sob a [MIT License](https://opensource.org/license
 ## Contribuição
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir **Issues** ou enviar **Pull Requests**.
+
+## Docker
+
+docker-compose build
+docker-compose up -d
