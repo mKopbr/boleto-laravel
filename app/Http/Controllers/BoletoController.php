@@ -58,7 +58,7 @@ class BoletoController extends Controller
 
     // Verificar se o processamento já foi concluído
     if ($progress >= $total) {
-        return response()->json(['message' => 'Processamento já foi concluído.']);
+        return response()->json(['message' => 'Processamento ja foi concluido.']);
     }
 
     // Retomar o processamento dos blocos restantes
